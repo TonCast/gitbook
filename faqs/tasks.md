@@ -15,6 +15,7 @@ Go to the "Earn" section in the main menu to see all available tasks and your pr
 Invite users who will match at least 10 tickets on the platform. The more friends you invite, the more TCAST tokens you earn.
 
 Task Rewards:
+
 - 2 friends: 10 TCAST
 - 5 friends: 15 TCAST
 - 10 friends: 25 TCAST
@@ -29,13 +30,14 @@ Referral Bonus: You will also receive 0.02% of the winnings from each user you i
 Place bets and match tickets with other users. The more tickets you match, the more rewards you receive.
 
 Rewards:
+
 - 10 matched tickets: 0.5 TCAST
 - 100 matched tickets: 5 TCAST
 - 1,000 matched tickets: 50 TCAST
 
 ### How do I invite friends?
 
-In the "Earn" section, you will find your unique referral link. Share this link with friends. When they sign up and match at least 10 tickets, they will count towards your Invite Friends task.
+In the "Earn" section, find the Invite Friends task and tap the "Share" button. This will open sharing options with your unique referral link. Share this link with friends.
 
 ### How to claim rewards?
 

@@ -14,14 +14,14 @@ Result: The "YES" outcome won.
 
 Participant 1 (was correct):
 
-* Winnings: 5 tickets × 0.1 TON = \~0.5 TON
-* Profit: 0.5 TON - 0.02 TON = 0.48 TON
+- Winnings: 5 tickets × 0.1 TON = \~0.5 TON
+- Profit: 0.5 TON - 0.02 TON = 0.48 TON
 
 Participant 2 (was incorrect):
 
-* Winnings: 0 TON (the "NO" outcome did not occur)
-* Loss: The entire staked amount of 0.1 TON
-* Loss: -100%
+- Winnings: 0 TON (the "NO" outcome did not occur)
+- Loss: The entire staked amount of 0.1 TON
+- Loss: -100%
 
 ### How to withdraw winnings?
 
@@ -36,13 +36,19 @@ Benefits of this approach:
 
 Your winnings are your TON in your wallet. You don't need to withdraw anything.
 
+### What is the difference between Market, Fixed, and Limit orders?
 
+Market order: You choose the odds that the market offers right now. Your order will match with the best available orders instantly. Ideal for those who want to quickly enter a position and agree with the current market odds.
 
-### What is the difference between a market and a limit order?
+Fixed order: You specify one exact odds coefficient and the number of tickets you want to buy. Your order will only match with users at that specific odds. Ideal for those who want to trade at a precise odds level.
 
-Market order: You choose the odds that the market offers right now. Ideal for those who want to quickly enter a position and agree with the market odds.
+Limit order: You specify the lowest odds coefficient you're willing to accept and the number of tickets you want to buy. If there are orders with better odds than your specified minimum, your order will match with them first. Ideal for those who want to ensure they get at least their desired odds or better.
 
-Limit order: You set the odds at which you want to buy. Your bet will only be executed when a match occurs (when someone on the other side of the transaction agrees to your odds). You can also go to the order book, where all unexecuted limit orders from other users are listed, and choose what suits you specifically. Ideal for those who want to place a bet at a desired odds.
+### Can I cancel my bet?
+
+Yes, you can cancel unmatched tickets from any order type (Market, Fixed, or Limit).
+
+If your order has unmatched tickets waiting for execution, you can cancel them at any time. Once your order is fully or partially matched, the matched tickets cannot be cancelled. The contract and network commissions are not refunded when you cancel unmatched tickets.
 
 ### What happens to the money if an event is canceled?
 

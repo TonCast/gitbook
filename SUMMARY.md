@@ -15,6 +15,8 @@
 
 * [Fundamentals](faqs/fundamentals.md)
 * [How to start and deposit](faqs/how-to-start-and-deposit.md)
+* [Create Market](faqs/create-market.md)
+* [Tasks and Rewards](faqs/tasks.md)
 * [DAO](faqs/dao.md)
 * [Staking](faqs/staking.md)
 * [Bet execution and payouts](faqs/bet-execution-and-payouts.md)

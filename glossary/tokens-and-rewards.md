@@ -1,6 +1,7 @@
 # Tokens and rewards
 
 * TCAST - Ton cast token. Gives the right to participate in staking.
+* Platform Balance - Tokens you earned within the app through tasks, referrals, creating markets, and other activities. You can spend these tokens on Market order type bets.
 * Staking - Blocking TCAST tokens to get a share of the platform's revenue.
 * Reward - Income that steakrs receive from the platform.
 * Tasks - Challenges that reward users with TCAST tokens for platform activity (inviting friends, matching tickets, creating markets).

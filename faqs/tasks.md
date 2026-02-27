@@ -23,7 +23,7 @@ Task Rewards:
 - 50 friends: 150 TCAST
 - 100 friends: 250 TCAST
 
-Referral Bonus: You will also receive 0.02% of the winnings from each user you invited. This is an ongoing reward that you earn every time your referrals win.
+Referral Bonus: You will also receive 0.2% of the winnings from each user you invited. This is an ongoing reward that you earn every time your referrals win.
 
 **Matched Tickets**
 

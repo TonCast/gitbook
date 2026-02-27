@@ -4,6 +4,8 @@
 
 You can create your own prediction market on TonCast. Your market will be reviewed by our team and, if approved, will be published on the platform. You will receive 20 TCAST tokens to your platform balance as a reward for creating quality content.
 
+To create a market, go to the **Earn** section and tap **+ Market**, or tap the **+** button on the Markets page.
+
 ### What do I need to create a market?
 
 To create a market, you need:

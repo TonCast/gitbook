@@ -14,14 +14,14 @@ Result: The "YES" outcome won.
 
 Participant 1 (was correct):
 
-- Winnings: 5 tickets × 0.1 TON = \~0.5 TON
-- Profit: 0.5 TON - 0.02 TON = 0.48 TON
+* Winnings: 5 tickets × 0.1 TON = \~0.5 TON
+* Profit: 0.5 TON - 0.02 TON = 0.48 TON
 
 Participant 2 (was incorrect):
 
-- Winnings: 0 TON (the "NO" outcome did not occur)
-- Loss: The entire staked amount of 0.1 TON
-- Loss: -100%
+* Winnings: 0 TON (the "NO" outcome did not occur)
+* Loss: The entire staked amount of 0.1 TON
+* Loss: -100%
 
 ### How to withdraw winnings?
 

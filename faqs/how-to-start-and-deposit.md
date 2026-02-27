@@ -4,7 +4,7 @@
 
 No, it's very simple and takes less than a minute:
 
-1. Click "Connect Wallet" and connect your TON wallet. [(If you still don't have a wallet and want to create one, click here)](https://ton.org/en/wallets?locale=en&pagination[limit]=-1)
+1. Click "Connect Wallet" and connect your TON wallet. [(If you still don't have a wallet and want to create one, click here)](https://ton.org/en/wallets?locale=en\&pagination\[limit]=-1)
 
 <p align="center"><img src="../.gitbook/assets/Снимок экрана 2025-09-24 в 17.32.10.png" alt="" data-size="original"></p>
 
@@ -16,9 +16,9 @@ No, it's very simple and takes less than a minute:
 4. Select the mode: Simple or Advanced.
    **Simple mode:** You can only place Market orders (instant execution at current market odds).
    **Advanced mode:** You have access to three order types:
-   - Market: Instant execution at the current market odds.
-   - Fixed: You specify one exact odds coefficient and the number of tickets you want to buy. Your order will only match with users at that specific odds.
-   - Limit: You specify the lowest odds coefficient you're willing to accept and the number of tickets you want to buy. If there are orders with better odds than your specified minimum, your order will match with them first.
+   * Market: Instant execution at the current market odds.
+   * Fixed: You specify one exact odds coefficient and the number of tickets you want to buy. Your order will only match with users at that specific odds.
+   * Limit: You specify the lowest odds coefficient you're willing to accept and the number of tickets you want to buy. If there are orders with better odds than your specified minimum, your order will match with them first.
 
 <p align="center"><img src="../.gitbook/assets/BettingModal.png" alt=""></p>
 

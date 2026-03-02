@@ -13,8 +13,8 @@ No, it's very simple and takes less than a minute:
 <p align="center"><img src="../.gitbook/assets/Снимок экрана 2025-10-02 в 13.53.24 (1).png" alt=""></p>
 
 3. Choose an outcome: Buy YES or Buy NO.
-4. Select the mode: Simple or Advanced.
-   **Simple mode:** You can only place Market orders (instant execution at current market odds).
+4. Select the mode: Simple or Advanced.<br>
+   **Simple mode:** You can only place Market orders (instant execution at current market odds).<br>
    **Advanced mode:** You have access to three order types:
    * Market: Instant execution at the current market odds.
    * Fixed: You specify one exact odds coefficient and the number of tickets you want to buy. Your order will only match with users at that specific odds.

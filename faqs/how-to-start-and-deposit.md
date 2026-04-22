@@ -28,4 +28,4 @@ No, it's very simple and takes less than a minute:
 
 1. Contract service fee per pair: 0.1 TON What is this? This is a fee for processing, secure execution, and recording your bet on the blockchain.
 2. Network fee (Gas Fee): \~0.003 TON What is this? This is a fee for the initial transaction to the smart contract.
-3. Platform fee: This is a small fee for using the TonCast platform itself. We only charge it if your prediction turns out to be correct. This commission is only 1%, and 99% of your winnings remain with you.
+3. Platform fee: This is a small fee for using the TonCast platform itself. We only charge it if your prediction turns out to be correct. This commission is only 5%, and 95% of your winnings remain with you.

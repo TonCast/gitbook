@@ -3,7 +3,11 @@
 The widget is a self-contained betting UI you can drop into any web page or React app. It includes a live market list, individual market pages, bet placement with TonConnect, and support for custom branding through CSS variables — no extra development required.
 
 {% hint style="info" %}
-**Not sure which approach to use?** Try the visual configurator first at [widget.toncast.me](https://widget.toncast.me/) — you can preview the widget, tweak colors and layout, and export a ready-to-paste code snippet.
+**Start here:** [widget.toncast.me](https://widget.toncast.me/) — a visual configurator where you can preview the widget live, tweak colors, theme, and layout, then export in one click:
+
+- **Download ZIP** — a ready-to-host package: `index.html` (standalone page), `index.iife.css` (widget styles), and `tonconnect-manifest.json` with your domain and app name pre-filled.
+- **Copy JS snippet** — a CDN `<script>` embed for plain HTML pages.
+- **Copy React snippet** — a ready-to-paste `ToncastBettingWidget` component using `@toncast/widget-loader`.
 {% endhint %}
 
 ---
@@ -207,7 +211,7 @@ const widget = new ToncastWidget({
 
 The widget automatically derives hover states, borders, shadows, and spacing from your base tokens. If you want to override a specific derived value (like `successBg`), just pass it explicitly and the widget will use that exact value instead. To disable all automatic derivation, set `deriveCssVars: false`.
 
-> **Tip:** Use the [visual configurator](https://widget.toncast.me/) to preview your color choices and copy the generated config.
+> **Tip:** Use the [visual configurator](https://widget.toncast.me/) to preview color changes live and export a ZIP with the final config baked in.
 
 ---
 

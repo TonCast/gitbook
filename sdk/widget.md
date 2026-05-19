@@ -80,7 +80,7 @@ function ToncastBettingWidget() {
 
     return () => {
       active = false;
-      widgetRef.current?.unmount();
+      widgetRef.current?.dispose(); // dispose() unmounts + clears all listeners
       widgetRef.current = null;
     };
   }, [tonconnect]);
@@ -161,6 +161,7 @@ The imperative class exposes a small set of methods for managing the widget's li
 | `widget.mount(element)` | Renders the widget inside the given element. |
 | `widget.unmount()` | Removes the widget from the DOM but keeps event listeners, so you can remount later. |
 | `widget.dispose()` | Removes the widget and clears all event listeners. Call this when you're fully done with the instance. |
+| `widget.update(config)` | Re-renders with a new config **without unmounting**. Visual changes (theme, colors) apply instantly. Changes to API URLs, language, or referral recreate the SDK client internally. |
 | `widget.on(event, fn)` | Listen to an event. Available events: `"bet"`, `"mount"`, `"unmount"`, `"error"`. |
 | `widget.off(event, fn)` | Remove a specific listener. |
 

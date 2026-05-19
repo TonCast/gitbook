@@ -80,7 +80,7 @@ These hooks fetch data from the REST API via TanStack Query. They cache results 
 | `useCategories()` | Raw category list `[{ id, title }]`. Cached indefinitely. |
 | `useCategoryFilters()` | Category filter chips ready to plug into `useStreamList`. |
 | `useCoins(opts)` | The user's TON and jetton balances. Needs `tonClient` on the client. |
-| `useBetQuote(params \| null)` | A bet quote — re-fetches automatically whenever params change. |
+| `useBetQuote(params \| null)` | A bet quote — re-fetches automatically whenever params change. Params require a `mode` field: `{ mode: "market", ... }`, `{ mode: "fixed", ... }`, or `{ mode: "limit", ... }`. |
 | `useMarketCapacity(source, isYes, opts?)` | How many matched tickets are available on the given side, broken down per odds level. Useful for building a ticket-count slider. |
 
 All of these accept standard TanStack Query options (`enabled`, `staleTime`, `select`, `refetchInterval`, …) as a second argument.
@@ -92,10 +92,10 @@ These hooks connect to live WebSocket streams and update your component on every
 | Hook | What you get |
 |---|---|
 | `useStreamList(params)` | Live list of markets. `data` is the latest snapshot, updated on every WebSocket broadcast. |
-| `useSubscribe(pariId)` | Live view of one market. `data` is `{ pari, oddsState, coefficientHistory }`. |
+| `useSubscribe(pariId, params?)` | Live view of one market. `data` is `{ pari, oddsState, coefficientHistory }`. Disabled when `pariId` is falsy. |
 | `useBetSummary(pariId)` | Streaming bet summary with two phases: TON prices arrive in ~200 ms, jetton prices follow in 3–8 s. |
 
-All live hooks return: `{ data, status, error, isLoading, isError, isSuccess, refetch }`.
+All live hooks return: `{ data, status, error, streamStatus, isLoading, isError, isSuccess, refetch }`. The `streamStatus` field mirrors the underlying stream's connection state (`"loading" | "live" | "polling" | "stopped"`).
 
 ### Actions
 

@@ -115,8 +115,14 @@ function App() {
   return (
     <Widget
       config={config}
+      className="my-widget"          // optional: extra CSS class on the root element
+      style={{ borderRadius: "12px" }} // optional: inline styles on the root element
       onBet={({ pariId, amount, side }) => {
         console.log("Bet placed:", side, amount.toString(), "on", pariId);
+      }}
+      onRenderError={(error, info) => {
+        // optional: called from the ErrorBoundary for analytics/logging
+        console.error("Widget render error", error, info);
       }}
     />
   );

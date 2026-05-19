@@ -152,7 +152,7 @@ stream.onBetEvent((event) => console.log("new bets", event.newBets)); // individ
 stream.onStatus((s) => console.log(s));
 
 // Read the full current state without subscribing
-stream.snapshot(); // → { pari, oddsState, coefficientHistory }
+stream.snapshot(); // → { pari: Pari|null, oddsState: OddsState|null, coefficientHistory: CoefficientHistoryPoint[] }
 
 stream.dispose();
 ```
@@ -177,9 +177,13 @@ The SDK builds a transaction ready for signing. **You send it to the user's wall
 
 #### Market bet — the most common
 
-The SDK spends your budget on the best available counter-side liquidity. Great for simple "I want to bet X TON on YES" UIs.
+The SDK spends your budget on the best available counter-side liquidity. Two ways to size it — pick one:
+
+- **`maxBudgetTon`** — "spend up to X TON, take whatever fills." Classic budget cap.
+- **`marketTickets`** — "give me exactly N matched tickets." Great for slider UIs where 1 step = 1 ticket.
 
 ```ts
+// Option A: budget-driven
 const quote = await client.betting.quoteMarketBet({
   pariId,
   isYes: true,
@@ -189,6 +193,17 @@ const quote = await client.betting.quoteMarketBet({
   oddsState: summary.oddsState,
   financialRiskAcknowledged: true,
 });
+
+// Option B: ticket-driven
+const quote = await client.betting.quoteMarketBet({
+  pariId,
+  isYes: true,
+  marketTickets: 42, // buy exactly 42 matched tickets
+  source: TON_ADDRESS,
+  oddsState: summary.oddsState,
+  financialRiskAcknowledged: true,
+});
+
 const confirmed = await client.betting.confirmQuote(quote, quoteParams);
 ```
 

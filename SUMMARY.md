@@ -25,9 +25,9 @@
 ## SDK
 
 * [Overview](sdk/overview.md)
-* [Core SDK — @toncast/sdk](sdk/core-sdk.md)
-* [React SDK — @toncast/sdk-react](sdk/react-sdk.md)
 * [Embeddable Widget](sdk/widget.md)
+* [React SDK — @toncast/sdk-react](sdk/react-sdk.md)
+* [Core SDK — @toncast/sdk](sdk/core-sdk.md)
 
 ## Smart contracts
 

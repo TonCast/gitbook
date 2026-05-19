@@ -275,4 +275,4 @@ In standalone mode, removing `referral` from the config clears it entirely. In i
 
 ## A note on the container ID
 
-`widget.mount(element)` accepts any DOM element — the `id="toncast-widget"` you see in examples is just a convention. The [widget configurator](https://widget.toncast.me/) scopes its exported `style.css` overrides to `#toncast-widget { … }`, so if you use a different ID, make sure to update the exported CSS accordingly.
+`widget.mount(element)` accepts any DOM element — the `id="toncast-widget"` you see in examples is just a convention. The ZIP from the configurator uses `#toncast-widget` as the container ID in `index.html`. If you rename the element, update the `id` attribute in `index.html` to match.

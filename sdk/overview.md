@@ -24,7 +24,7 @@ The Toncast SDK is a set of TypeScript packages that handle everything — fetch
 ## How to choose
 
 **Just want the widget with no extra work?**
-Use the CDN embed or `@toncast/widget` — see the [Widget page](widget.md).
+Go to [widget.toncast.me](https://widget.toncast.me/), configure it visually, and download a ready-to-deploy ZIP — no code required. See the [Widget page](widget.md) for details and manual integration options.
 
 **Building a React app with custom UI?**
 Use `@toncast/sdk-react` — pre-built hooks for every endpoint, live data included. See the [React SDK page](react-sdk.md).

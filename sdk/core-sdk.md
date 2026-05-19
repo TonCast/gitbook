@@ -253,7 +253,7 @@ Every bet has three roles. By default they all resolve to the connected wallet �
 |---|---|---|
 | Who pays & signs | `senderAddress` | `client.userAddress` |
 | Who receives the payout | `beneficiary` | same as `senderAddress` |
-| Who earns a referral cut | `referral` + `referralPct` (0–7) | `client.referral` option |
+| Who earns a referral cut | `referral` + `referralPct` (1–7) | `client.referral` option |
 
 ---
 
@@ -266,7 +266,7 @@ const client = new ToncastClient({
   language: "en",        // en | ru | hi | es | zh | fr | de | pt | fa | ar
   userAddress,           // set once the wallet connects
   tonClient,             // required for balance reads and jetton betting
-  referral: { address: "UQMyWallet…", pct: 5 }, // your referral wallet, 0–7%
+  referral: { address: "UQMyWallet…", pct: 5 }, // your referral wallet, 1–7%
   requestTimeoutMs: 15_000,
   maxAttempts: 3,
   retryDelayMs: 1000,

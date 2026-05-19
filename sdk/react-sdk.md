@@ -81,7 +81,7 @@ These hooks fetch data from the REST API via TanStack Query. They cache results 
 | `useCategoryFilters()` | Category filter chips ready to plug into `useStreamList`. |
 | `useCoins(opts)` | The user's TON and jetton balances. Needs `tonClient` on the client. |
 | `useBetQuote(params \| null)` | A bet quote — re-fetches automatically whenever params change. |
-| `useMarketCapacity(params)` | Per-coin betting capacity for a given market (min/max amounts, feasibility). |
+| `useMarketCapacity(source, isYes, opts?)` | How many matched tickets are available on the given side, broken down per odds level. Useful for building a ticket-count slider. |
 
 All of these accept standard TanStack Query options (`enabled`, `staleTime`, `select`, `refetchInterval`, …) as a second argument.
 
@@ -107,7 +107,7 @@ All live hooks return: `{ data, status, error, isLoading, isError, isSuccess, re
 
 | Hook | What it does |
 |---|---|
-| `useToncastLanguage()` | Returns `{ language, setLanguage }`. Use this to build a language picker or keep your app's locale in sync with the SDK. |
+| `useToncastLanguage()` | Returns `{ lang, setLang }`. Use this to build a language picker or keep your app's locale in sync with the SDK. Invalidates all cached queries automatically when the language changes. |
 
 ### TonConnect wallet sync
 

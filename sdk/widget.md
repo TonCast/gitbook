@@ -206,14 +206,26 @@ The widget automatically derives hover states, borders, shadows, and spacing fro
 
 ## Language
 
-The widget has a built-in language picker that the user can use. As the host, you can also control the language from outside:
+The widget has a built-in language picker. Two things control what happens with it:
 
 | Setting | Behavior |
 |---|---|
-| `config.widget.language` (you set this) | Always applied — even if the user picked something else in the widget. |
-| In-widget language picker | Works freely unless you set `config.widget.language`. |
+| `config.widget.language` (you set this) | Always applied on every render — overrides whatever the user picked. |
+| In-widget language picker | Works freely unless `config.widget.language` is set. |
 
-To lock the language and prevent the picker from changing it, always pass `config.widget.language`. To let users choose freely, leave it out.
+To lock the language, always pass `config.widget.language`. To let users choose freely, leave it out.
+
+You can also control **which languages appear** in the picker via `config.widget.languages`:
+
+```ts
+// Show only English and Russian in the picker
+widget: { languages: ["en", "ru"] }
+
+// Hide the picker entirely
+widget: { languages: [] }
+
+// Show all supported languages (default — omit the option)
+```
 
 ---
 
@@ -225,7 +237,7 @@ If you want bets placed through your integration to earn you a referral share, p
 const widget = new ToncastWidget({
   tonconnect: { … },
   widget: {
-    referral: { address: "UQYourWallet…", pct: 5 }, // 0–7%
+    referral: { address: "UQYourWallet…", pct: 5 }, // 1–7%
   },
 });
 ```

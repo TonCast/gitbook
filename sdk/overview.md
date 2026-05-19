@@ -1,33 +1,56 @@
-# SDK Overview
+# Toncast SDK
 
-The Toncast SDK is a TypeScript monorepo that gives you everything needed to integrate Toncast prediction markets into your application — from raw REST/WebSocket data fetching to a ready-to-embed betting UI.
+Want to add prediction markets to your app? You're in the right place.
 
-## Packages
+The Toncast SDK is a set of TypeScript packages that handle everything — fetching market data, streaming live odds, building bet transactions, and even rendering a full betting UI if you don't want to build one yourself.
 
-| Package | Install | Description |
-|---|---|---|
-| **`@toncast/sdk`** | `npm install @toncast/sdk` | Framework-agnostic core: REST, WebSocket streams, and bet-transaction building. Works in both browser and Node 20+. |
-| **`@toncast/sdk-react`** | `npm install @toncast/sdk @toncast/sdk-react @tanstack/react-query` | Thin React 18/19 wrapper on TanStack Query. Provider + hooks for every SDK endpoint. |
-| **`@toncast/widget`** | `npm install @toncast/widget` | Embeddable betting UI: market list, pari detail, bet placement with TonConnect. CSS-variable theming. |
-| **`@toncast/widget-loader`** | `npm install @toncast/widget-loader` | Lightweight CDN loader — injects the hosted widget bundle at runtime. Useful for React apps with dynamic import. |
+---
+
+## What's available
+
+| Package | What it does |
+|---|---|
+| **`@toncast/sdk`** | The core. Fetch markets, stream live updates, and build ready-to-sign bet transactions. Works everywhere — browser and Node 20+. |
+| **`@toncast/sdk-react`** | React hooks built on top of the core SDK. If you're building a React app, start here instead of using the core SDK directly. |
+| **`@toncast/widget`** | A plug-and-play betting UI — market list, live odds, TonConnect wallet, the works. Drop it in and you're done. |
+| **`@toncast/widget-loader`** | A tiny script that pulls the widget from our CDN at runtime. Handy when you want to avoid adding the widget bundle to your own build. |
 
 {% hint style="warning" %}
-**Pre-release (0.0.1).** Pin exact npm versions until `1.0.0` — minor bumps may include breaking changes.
+**Still in early development (0.0.1).** Lock your npm versions to exact numbers until we reach `1.0.0` — we may ship breaking changes in minor releases.
 {% endhint %}
 
-## How they fit together
+---
+
+## How to choose
+
+**Just want the widget with no extra work?**
+Use the CDN embed or `@toncast/widget` — see the [Widget page](widget.md).
+
+**Building a React app with custom UI?**
+Use `@toncast/sdk-react` — pre-built hooks for every endpoint, live data included. See the [React SDK page](react-sdk.md).
+
+**Need full control — custom framework, server-side, or complex betting logic?**
+Use `@toncast/sdk` directly. See the [Core SDK page](core-sdk.md).
+
+---
+
+## How the packages relate
 
 ```
 Your app
-  ├── @toncast/sdk          ← data + betting logic (always needed)
-  │     └── uses @toncast/tx-sdk internally (tx building, STON.fi)
-  ├── @toncast/sdk-react    ← React hooks (optional, wraps sdk)
-  └── @toncast/widget       ← drop-in UI (optional, uses sdk internally)
-        or @toncast/widget-loader  ← CDN variant of the widget
+  ├── @toncast/sdk            ← always the foundation
+  │     └── @toncast/tx-sdk  ← handles transaction building + STON.fi routing (auto-installed)
+  │
+  ├── @toncast/sdk-react      ← React wrapper around the core (optional)
+  │
+  └── @toncast/widget         ← full betting UI, uses the core internally (optional)
+        @toncast/widget-loader ← CDN version of the widget (optional)
 ```
 
-## Source code & examples
+---
 
-* GitHub: [https://github.com/TonCast](https://github.com/TonCast)
-* Demo app (Vite + React 19 + TailwindCSS): `examples/react-app/`
-* Widget configurator: `examples/widget-constructor/`
+## Resources
+
+* **Widget constructor** — configure the widget visually and get a ready-to-paste code snippet: [widget.toncast.me](https://widget.toncast.me/)
+* **GitHub** — source code and examples: [github.com/TonCast](https://github.com/TonCast)
+* **Demo app** — a working Vite + React 19 app showing the full flow: `examples/react-app/`

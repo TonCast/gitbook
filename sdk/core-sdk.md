@@ -1,46 +1,53 @@
 # Core SDK — `@toncast/sdk`
 
-## Install
+The core SDK gives you full access to the Toncast API — market data, live streams, wallet balances, and bet transactions — without any framework requirements. It runs in the browser and in Node 20+.
+
+## Installation
 
 ```bash
 npm install @toncast/sdk
 ```
 
-`@toncast/tx-sdk`, `@ton/ton`, `@ston-fi/api`, and `@ston-fi/sdk` are pulled in automatically as hard dependencies — the full betting flow requires all of them.
+A few extra packages (`@toncast/tx-sdk`, `@ton/ton`, `@ston-fi/api`, `@ston-fi/sdk`) are installed automatically — they handle transaction building and STON.fi routing under the hood.
 
 ---
 
-## Quick start
+## Your first integration
+
+Here's the full flow from "no wallet connected" to "bet ready to sign":
 
 ```ts
 import { TonClient, ToncastClient, TON_ADDRESS } from "@toncast/sdk";
 
-// RPC client for on-chain reads (jetton balances, STON.fi routing)
+// Connect to the TON network for reading balances and routing swaps
 const tonClient = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
 });
 
-// --- Phase 1: public reads, no wallet needed ---
+// Create the Toncast client — no wallet needed yet for public data
 const client = new ToncastClient({ tonClient });
 
+// Browse markets
 const page = await client.paris.list({ limit: 20 });
 const pari = page.items[0];
 
-// --- Phase 2: wallet is connected ---
-client.setUserAddress(userAddress); // from TonConnect or server config
+// Once the user connects their wallet, tell the SDK about it
+client.setUserAddress(userAddress); // from TonConnect, server config, etc.
 
+// Fetch the market + the user's wallet options in one call
 const summary = await client.betting.summary(pari.id);
-// summary.capacities → all user coins annotated with viability + min/maxBetTon
 
+// Pick a funding source — here we use TON, filtered to only viable options
 const picked = summary.capacities.find(
   (c) => c.source.address === TON_ADDRESS && c.feasible
 );
 if (!picked) throw new Error("no viable funding source");
 
+// Build a quote for a market bet on YES
 const quoteParams = {
   pariId: pari.id,
   isYes: true,
-  maxBudgetTon: 5_000_000_000n, // 5 TON in nano
+  maxBudgetTon: 5_000_000_000n, // 5 TON, in nanoTON
   source: picked.source.address,
   pricedCoins: summary.pricedCoins,
   oddsState: summary.oddsState,
@@ -49,10 +56,10 @@ const quoteParams = {
 
 const quote = await client.betting.quoteMarketBet(quoteParams);
 
-// Required before every sign — re-simulates the STON.fi route
+// Always run confirmQuote right before the user signs — it re-checks current prices
 const confirmed = await client.betting.confirmQuote(quote, quoteParams);
 
-// Hand off to your wallet bridge (SDK never signs or sends)
+// Hand the messages to your wallet — the SDK never signs anything itself
 await tonConnectUI.sendTransaction({
   messages: confirmed.messages,
   validUntil: Math.floor(Date.now() / 1000) + 5 * 60,
@@ -61,35 +68,37 @@ await tonConnectUI.sendTransaction({
 
 ---
 
-## Reading data
+## Reading market data
 
 ```ts
-// Categories
+// Categories — useful for building filter chips in your UI
 const categories = await client.categories.list();       // [{ id, title }]
-const filters = await client.categories.listFilters();   // UI-ready chips
+const filters = await client.categories.listFilters();   // ready-to-use filter params
 
-// Paris — three feeds
+// Markets — three feeds to choose from
 const active   = await client.paris.list({ feed: "active", limit: 20 });
-const finished = await client.paris.list({ feed: "finished" });
-const pending  = await client.paris.list({ feed: "pending" });
-const results  = await client.paris.list({ search: "ETH price" });
+const finished = await client.paris.list({ feed: "finished" });  // resolved markets
+const pending  = await client.paris.list({ feed: "pending" });   // ended, awaiting oracle
+const searched = await client.paris.list({ search: "ETH price" });
 
-// Single pari
+// A single market and its data
 const pari    = await client.paris.get(pariId);
 const odds    = await client.paris.getOddsState(pariId);
 const history = await client.paris.getCoefficientHistory(pariId, { timeframe: "ALL" });
-const winners = await client.paris.getWinners(pariId);  // empty until resolved
+const winners = await client.paris.getWinners(pariId);   // empty until the market resolves
 
-// User bets
+// A user's bet history
 const userBets = await client.bets.listForUser({ pageSize: 20 });
 for await (const b of client.bets.iterateForUser()) console.log(b);
 const onPari   = await client.bets.listForPariByUser({ pariId, pageSize: 15 });
 
-// Wallet balances
-const coins = await client.coins.list(); // TON + all jettons the wallet holds
+// Wallet balances — TON and every jetton the user holds
+const coins = await client.coins.list();
 ```
 
 ### Pagination
+
+Markets use cursor-based pagination. Pass the cursor back to get the next page:
 
 ```ts
 let page = await client.paris.list({ feed: "finished", limit: 20 });
@@ -97,77 +106,84 @@ while (page.hasMore && page.nextCursor) {
   page = await client.paris.list({ feed: "finished", cursor: page.nextCursor });
 }
 
-// Or use the async iterator — handles cursors for you
+// Or use the iterator — it handles cursors for you automatically
 for await (const pari of client.paris.iterate({ feed: "finished" })) { /* … */ }
 ```
 
 ---
 
-## Live data
+## Live market data
 
-### `paris.streamList` — live market list
+### Live market list — `paris.streamList`
 
-Self-managing list that stays in sync via WebSocket broadcast (with automatic polling fallback, reconnect, and gap recovery).
+This keeps a list of markets in sync via WebSocket. You just listen to snapshots — the SDK handles reconnects, missed messages, and falls back to polling if the socket drops.
 
 ```ts
 const stream = client.paris.streamList({ feed: "active", pageSize: 20 });
 
-// Fires immediately with current state, then on every change
+// Your callback fires immediately with the current list, then again on every update
 const unsub = stream.onSnapshot((paris) => setUiState(paris));
 
+// See what's happening with the connection
 stream.onStatus((s) => console.log(s)); // "loading" | "live" | "polling" | "stopped"
 
-await stream.loadMore(); // pagination
+// Load more markets (pagination still works in live mode)
+await stream.loadMore();
 stream.hasMore;
-stream.snapshot();       // synchronous read without a listener
 
-stream.dispose();        // close WS + stop polling
+// Read the current list without subscribing
+stream.snapshot();
+
+// Clean up when you're done
+stream.dispose();
 ```
 
-### `paris.subscribe(pariId)` — single pari view
+### Single market stream — `paris.subscribe(pariId)`
 
-Initial parallel fetch of pari + odds + coefficient history, then per-pari WebSocket for incremental updates.
+Opens a dedicated WebSocket for one market. You get the current state immediately (from a parallel fetch), then live updates as bets come in and odds change.
 
 ```ts
 const stream = client.paris.subscribe(pariId);
 
-stream.onPari((pari) => setPari(pari));
-stream.onOddsState((odds) => setOdds(odds));
-stream.onCoefficientHistory((points) => setHistory(points));
-stream.onBetEvent((event) => console.log("new bets", event.newBets));
+stream.onPari((pari) => setPari(pari));                               // status, volumes
+stream.onOddsState((odds) => setOdds(odds));                          // current order book
+stream.onCoefficientHistory((points) => setHistory(points));          // odds history
+stream.onBetEvent((event) => console.log("new bets", event.newBets)); // individual bets
 stream.onStatus((s) => console.log(s));
 
-stream.snapshot(); // { pari, oddsState, coefficientHistory }
+// Read the full current state without subscribing
+stream.snapshot(); // → { pari, oddsState, coefficientHistory }
+
 stream.dispose();
 ```
 
 ---
 
-## Betting
+## Placing a bet
 
-The SDK builds a ready-to-sign transaction. **You** sign and send it. The SDK never holds private keys.
+The SDK builds a transaction ready for signing. **You send it to the user's wallet — the SDK never touches private keys.**
 
-### Key concepts
+### Quick glossary
 
-| Term | Meaning |
+| Term | What it means |
 |---|---|
-| **Pari** | A single prediction market (e.g. "Will ETH be above $2,500?"). |
-| **`yesOdds`** | Integer 2–98 (even). Implied YES probability in percent. |
+| **Pari** | A single prediction market, e.g. "Will ETH be above $2,500 on April 25?" |
+| **`yesOdds`** | A number from 2 to 98 (always even). Roughly the implied YES probability in percent. |
 | **`isYes`** | Which side you're betting: `true` = YES, `false` = NO. |
-| **Tickets** | Units purchased. Each YES ticket costs `yesOdds × 0.001 TON`; each NO ticket costs `(100 − yesOdds) × 0.001 TON`. |
-| **TON amounts** | Always bigints in **nanoTON** (`1 TON = 1_000_000_000n`). |
+| **Tickets** | The units you're buying. A YES ticket at `yesOdds = 60` costs `0.06 TON`; a NO ticket costs `0.04 TON`. Each ticket pays out `0.1 TON` if it wins. |
+| **TON amounts** | Always in nanoTON as a bigint. `1 TON = 1_000_000_000n`. |
 
-### Three bet modes
+### Three ways to bet
 
-#### Market (most common)
+#### Market bet — the most common
 
-Spends greedily on the best counter-side liquidity up to your budget.
+The SDK spends your budget on the best available counter-side liquidity. Great for simple "I want to bet X TON on YES" UIs.
 
 ```ts
 const quote = await client.betting.quoteMarketBet({
   pariId,
   isYes: true,
-  maxBudgetTon: 5_000_000_000n,
+  maxBudgetTon: 5_000_000_000n, // spend up to 5 TON
   source: TON_ADDRESS,
   pricedCoins: summary.pricedCoins,
   oddsState: summary.oddsState,
@@ -176,23 +192,23 @@ const quote = await client.betting.quoteMarketBet({
 const confirmed = await client.betting.confirmQuote(quote, quoteParams);
 ```
 
-#### Limit
+#### Limit bet
 
-Matches available liquidity up to `worstYesOdds`, parks the remainder as a new limit order.
+Set a worst-acceptable odds, and the SDK matches what it can at that level or better. Any remainder goes in as a limit order on the order book.
 
 ```ts
 const quote = await client.betting.quoteLimitBet({
   pariId, isYes: true,
-  worstYesOdds: 56,
+  worstYesOdds: 56,   // "I'll only bet if I get at least 56% implied probability for YES"
   ticketsCount: 300,
   source: TON_ADDRESS,
   financialRiskAcknowledged: true,
 });
 ```
 
-#### Fixed
+#### Fixed bet
 
-One specific odds level, one ticket count.
+Exactly the odds you want, exactly the number of tickets you want. Current liquidity is ignored.
 
 ```ts
 const quote = await client.betting.quoteFixedBet({
@@ -204,93 +220,95 @@ const quote = await client.betting.quoteFixedBet({
 });
 ```
 
-### TON vs Jetton
+### Betting with TON vs a jetton (USDT, etc.)
 
-| Path | How it works |
-|---|---|
-| **TON (direct)** | Synchronous, CPU-only for the quote. No STON.fi swap. `confirmQuote` is still required before signing. |
-| **Jetton** | Async — STON.fi swap simulation. `confirmQuote` re-simulates right before signing to catch slippage drift. **Never skip `confirmQuote` for jettons.** |
+You can fund a bet with TON or with any jetton in the user's wallet. The difference matters:
 
-To bet with a jetton, pass the jetton master address as `source`. Use `summary.capacities` to filter coins by `feasible: true` first.
+| | TON | Jetton (e.g. USDT) |
+|---|---|---|
+| How it works | Sent directly to the market contract | Swapped through STON.fi first, then forwarded |
+| Quote speed | Instant, pure CPU | Requires a STON.fi simulation (~async) |
+| `confirmQuote` | Still required before signing | **Always required** — re-simulates the swap to catch price drift |
+
+To use a jetton, find one from `summary.capacities` marked `feasible: true` and pass its address as `source`:
 
 ```ts
 const usdt = summary.capacities.find((c) => c.source.symbol === "USDT" && c.feasible);
-if (!usdt) throw new Error("no viable USDT balance");
+if (!usdt) throw new Error("user doesn't have enough USDT to bet");
 
 const quote = await client.betting.quoteMarketBet({
   ...quoteParams,
   source: usdt.source.address,
-  maxBudgetTon: 5_000_000_000n,
 });
 const confirmed = await client.betting.confirmQuote(quote, quoteParams);
-// confirmed.messages → TonConnect
-// confirmed.txs      → raw TxParams[]
+// confirmed.messages → pass to TonConnect
+// confirmed.txs      → use directly with a raw signer
 ```
 
-### Three roles per bet
+### Roles in a bet
+
+Every bet has three roles. By default they all resolve to the connected wallet — but you can override any of them:
 
 | Role | Field | Default |
 |---|---|---|
-| **Signer** (funds & signs) | `senderAddress` | `client.userAddress` |
-| **Beneficiary** (receives payout) | `beneficiary` | `senderAddress` |
-| **Referral** (earns a share) | `referral` + `referralPct` | `client.referral` option |
-
-Pass any of them explicitly in `quoteParams` to override the defaults.
+| Who pays & signs | `senderAddress` | `client.userAddress` |
+| Who receives the payout | `beneficiary` | same as `senderAddress` |
+| Who earns a referral cut | `referral` + `referralPct` (0–7) | `client.referral` option |
 
 ---
 
 ## Configuration
 
+All options are optional. A bare `new ToncastClient()` works for public read methods.
+
 ```ts
 const client = new ToncastClient({
-  baseUrl: "https://toncast.me/api",
-  wsUrl: "wss://toncast.me",
-  language: "en",           // en | ru | hi | es | zh | fr | de | pt | fa | ar
-  userAddress,
-  tonClient,
-  referral: { address: "UQMyWallet…", pct: 5 }, // 0..7
+  language: "en",        // en | ru | hi | es | zh | fr | de | pt | fa | ar
+  userAddress,           // set once the wallet connects
+  tonClient,             // required for balance reads and jetton betting
+  referral: { address: "UQMyWallet…", pct: 5 }, // your referral wallet, 0–7%
   requestTimeoutMs: 15_000,
   maxAttempts: 3,
   retryDelayMs: 1000,
   prefetch: { categories: true, coins: false, swapMarkets: false },
   logger: console,
   onBackgroundError(error, task) {
-    console.warn("Toncast background task failed", task, error);
+    console.warn("background task failed", task, error);
   },
 });
 ```
 
-All fields are optional. `new ToncastClient()` works for public read-only methods. Personal methods (`coins`, user bets, betting) require `userAddress` and `tonClient`.
-
-### User address
+### Changing the user address at runtime
 
 ```ts
-// Three levels — last one wins:
-new ToncastClient({ userAddress });      // constructor
-client.setUserAddress(addr);            // runtime swap
-client.clearUserAddress();
-client.bets.listForUser({ userAddress: other }); // per-call override
+// Three levels — the most specific one wins:
+new ToncastClient({ userAddress });             // set at startup
+client.setUserAddress(addr);                   // update when wallet connects
+client.clearUserAddress();                     // clear when wallet disconnects
+client.bets.listForUser({ userAddress: other }); // override for one specific call
 ```
 
 ### Language
 
+The SDK sends the language as `Accept-Language` on every request and uses it to localize market names in live events.
+
 ```ts
-const client = new ToncastClient({ language: "ru-RU" }); // → "ru"
-client.setLanguage("zh-Hans-CN");                         // → "zh"
+new ToncastClient({ language: "ru-RU" }); // → "ru"
+client.setLanguage("zh-Hans-CN");         // → "zh"
 ```
 
 ---
 
-## Error handling
+## Handling errors
 
-All SDK errors extend `ToncastError`:
+All SDK errors extend `ToncastError`, so you can catch them broadly or by specific type:
 
-| Class | When |
+| Error class | When it happens |
 |---|---|
-| `ToncastApiError` | REST non-2xx response. Has `status`, `endpoint`, optional `requestId`. |
-| `ToncastRateLimitError` | HTTP 429. Has `retryAfterMs`. |
-| `ToncastWsError` | WebSocket transport or protocol failure. |
-| `ToncastValidationError` | Backend response failed the SDK's Zod contract. |
+| `ToncastApiError` | The API returned a non-2xx response. Has `status`, `endpoint`, and optionally `requestId`. |
+| `ToncastRateLimitError` | HTTP 429. Has `retryAfterMs` so you can show a countdown. |
+| `ToncastWsError` | Something went wrong with the WebSocket connection. |
+| `ToncastValidationError` | The API returned data that doesn't match the expected shape — likely a backend change. |
 
 ```ts
 import { ToncastError, ToncastRateLimitError } from "@toncast/sdk";
@@ -299,36 +317,38 @@ try {
   await client.paris.get(pariId);
 } catch (err) {
   if (err instanceof ToncastRateLimitError) {
-    showRetryAfter(err.retryAfterMs);
+    showRetryCountdown(err.retryAfterMs);
   } else if (err instanceof ToncastError) {
-    showSdkError(err.message);
+    showErrorMessage(err.message);
   } else {
-    throw err;
+    throw err; // re-throw unexpected errors
   }
 }
 ```
 
-For bet errors specifically, use `classifyBetFlowError(err)` to bucket failures into `toncast | wallet_user_rejected | wallet_failed | network | unknown`.
+For bet-specific errors, `classifyBetFlowError(err)` helps you tell apart user cancellations (`wallet_user_rejected`), wallet failures (`wallet_failed`), network issues (`network`), and SDK-level errors (`toncast`).
 
 ---
 
-## Cleanup
+## Cleaning up
 
-Always call `dispose()` when a component unmounts, a route changes, or the server shuts down:
+Always clean up streams when you're done with them — otherwise WebSockets stay open and polling keeps running.
 
 ```ts
-stream.dispose();         // one stream
-client.paris.dispose();   // all pari/list streams
-client.dispose();         // all SDK-owned resources
+stream.dispose();         // stop one stream
+client.paris.dispose();   // stop all market streams at once
+client.dispose();         // stop everything the client owns
 ```
+
+Call `client.dispose()` on route changes, component unmounts, or server shutdown.
 
 ---
 
-## Production checklist
+## Before you go live
 
-* Pin exact package versions until `1.0.0`.
-* Never hardcode `userAddress`, `senderAddress`, or `beneficiary` — always read from the connected wallet.
-* Always run `confirmQuote` immediately before the user signs — never reuse an old confirmed result.
-* For jetton bets, never skip `confirmQuote` (slippage drift).
-* Smoke-test on mainnet with minimal amounts before going live.
-* Surface SDK errors to the UI — do not turn them into silent empty states.
+* Lock to exact package versions until `1.0.0`.
+* Never hardcode wallet addresses — always read them from the connected wallet.
+* Always call `confirmQuote` immediately before the user signs, every time. Don't cache or reuse the result.
+* For jetton bets, `confirmQuote` is especially critical — swap rates change by the second.
+* Test on mainnet with tiny amounts before turning on real traffic.
+* Always surface SDK errors to the user. Silent empty states are confusing and hide real problems.

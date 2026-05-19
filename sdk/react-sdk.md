@@ -1,20 +1,23 @@
 # React SDK — `@toncast/sdk-react`
 
-React hooks for `@toncast/sdk`, built on top of [TanStack Query](https://tanstack.com/query/latest). REST endpoints become `useQuery` hooks; WebSocket streams use `useSyncExternalStore` so live updates never miss an intermediate value.
+If you're building a React app, this package is your best starting point. It wraps the core SDK in React-friendly hooks powered by [TanStack Query](https://tanstack.com/query/latest) — REST calls become `useQuery` hooks, and live WebSocket streams update your components automatically without any extra wiring.
 
-## Install
+## Installation
 
 ```bash
 npm install @toncast/sdk @toncast/sdk-react @tanstack/react-query
-# If you use TonConnect for wallet auth:
+
+# If you're using TonConnect for wallet connections:
 npm install @tonconnect/ui-react
 ```
 
-Peer dependencies: React `^18 || ^19`, `@tanstack/react-query ^5`.
+Requires React 18 or 19 and `@tanstack/react-query` v5.
 
 ---
 
-## Quick start
+## Getting started
+
+Wrap your app in `<ToncastProvider>` and you're ready to use any hook:
 
 ```tsx
 import { TonClient, ToncastClient } from "@toncast/sdk";
@@ -24,84 +27,97 @@ const tonClient = new TonClient({
   endpoint: "https://toncenter.com/api/v2/jsonRPC",
   apiKey: import.meta.env.VITE_TONCENTER_API_KEY,
 });
+
 const client = new ToncastClient({ tonClient });
 
 function App() {
   return (
     <ToncastProvider client={client}>
-      <ParisFeed />
+      <MarketList />
     </ToncastProvider>
   );
 }
 
-function ParisFeed() {
+function MarketList() {
   const { data, isLoading } = useStreamList({ feed: "active" });
 
-  if (isLoading) return <p>Loading…</p>;
+  if (isLoading) return <p>Loading markets…</p>;
   return data?.map((p) => <div key={p.id}>{p.name}</div>);
 }
 ```
 
-`<ToncastProvider>` creates an internal `QueryClient` automatically. To share an existing TanStack Query instance, pass `queryClient={appQueryClient}`.
+`<ToncastProvider>` creates its own internal `QueryClient`. If your app already uses TanStack Query, pass yours in: `<ToncastProvider client={client} queryClient={appQueryClient}>`.
 
 ---
 
 ## Provider
 
-| Export | Description |
+| Export | What it does |
 |---|---|
-| `<ToncastProvider client queryClient?>` | Wires both clients into context. |
-| `useToncastClient()` | Read the SDK client. Throws outside a provider. |
+| `<ToncastProvider client queryClient?>` | Sets up the SDK and TanStack Query contexts. |
+| `useToncastClient()` | Access the SDK client from any component inside the provider. |
 
 ---
 
-## Hooks reference
+## Hooks
 
-### High-level
+### All-in-one bet hook
 
-| Hook | Description |
+| Hook | What it does |
 |---|---|
-| `useBet(params)` | All-in-one hook for the full bet flow — summary, coin picker, quote, confirm. Recommended for most UIs. |
+| `useBet(params)` | The easiest way to build a betting UI. Manages the full flow — fetching market data, pricing coins, building the quote, and confirming. See the example below. |
 
-### Read (REST → `useQuery`)
+### Reading data
 
-| Hook | Wraps | Notes |
-|---|---|---|
-| `useParis(params)` | `paris.list` | Single page, cursor-paginated. |
-| `usePari(id)` | `paris.get` | Disabled when `id` is falsy. |
-| `useBets(params)` | `bets.listForUser` / `listForPariByUser` | `pariId` optional → cross-pari history. |
-| `useCategories()` | `categories.list` | Raw `{ id, title }`, `staleTime: Infinity`. |
-| `useCategoryFilters()` | `categories.listFilters` | UI-ready chips for a category picker. |
-| `useCoins(opts)` | `coins.list` | TON + jettons. Requires `tonClient`. |
-| `useBetQuote(params \| null)` | `betting.quote*Bet` | Auto re-quotes when params change. |
+These hooks fetch data from the REST API via TanStack Query. They cache results and re-fetch automatically.
 
-Pass any TanStack `UseQueryOptions` (`enabled`, `staleTime`, `select`, `refetchInterval`, …) as a second argument.
-
-### Live (`useSyncExternalStore`)
-
-| Hook | Description |
+| Hook | What it fetches |
 |---|---|
-| `useStreamList(params)` | Wraps `paris.streamList`. `data` is the latest `Pari[]` snapshot; re-emits on every WS broadcast. |
-| `useSubscribe(pariId)` | Wraps `paris.subscribe`. `data` is `{ pari, oddsState, coefficientHistory }`. |
-| `useBetSummary(pariId)` | Wraps `betting.subscribeSummary`. Two phases: TON-only (~200 ms), then full jetton pricing (3–8 s on cold start). |
+| `useParis(params)` | A single page of markets (cursor-paginated). |
+| `usePari(id)` | One market by ID. Skips the request if `id` is falsy. |
+| `useBets(params)` | A user's bet history. Leave `pariId` empty for history across all markets. |
+| `useInfiniteBets(params)` | Same as `useBets` but with infinite scroll support. |
+| `useCategories()` | Raw category list `[{ id, title }]`. Cached indefinitely. |
+| `useCategoryFilters()` | Category filter chips ready to plug into `useStreamList`. |
+| `useCoins(opts)` | The user's TON and jetton balances. Needs `tonClient` on the client. |
+| `useBetQuote(params \| null)` | A bet quote — re-fetches automatically whenever params change. |
+| `useMarketCapacity(params)` | Per-coin betting capacity for a given market (min/max amounts, feasibility). |
 
-All live hooks return `{ data, status, error, isLoading, isError, isSuccess, refetch }`.
+All of these accept standard TanStack Query options (`enabled`, `staleTime`, `select`, `refetchInterval`, …) as a second argument.
 
-### Mutations
+### Live data
 
-| Hook | Description |
+These hooks connect to live WebSocket streams and update your component on every change.
+
+| Hook | What you get |
 |---|---|
-| `useConfirmBet()` | TanStack `useMutation` around `betting.confirmQuote`. Pass `financialRiskAcknowledged: true`. |
+| `useStreamList(params)` | Live list of markets. `data` is the latest snapshot, updated on every WebSocket broadcast. |
+| `useSubscribe(pariId)` | Live view of one market. `data` is `{ pari, oddsState, coefficientHistory }`. |
+| `useBetSummary(pariId)` | Streaming bet summary with two phases: TON prices arrive in ~200 ms, jetton prices follow in 3–8 s. |
 
-### TonConnect bridge
+All live hooks return: `{ data, status, error, isLoading, isError, isSuccess, refetch }`.
+
+### Actions
+
+| Hook | What it does |
+|---|---|
+| `useConfirmBet()` | A TanStack mutation that wraps `betting.confirmQuote`. Call `mutateAsync` right before the user signs. |
+
+### Language
+
+| Hook | What it does |
+|---|---|
+| `useToncastLanguage()` | Returns `{ language, setLanguage }`. Use this to build a language picker or keep your app's locale in sync with the SDK. |
+
+### TonConnect wallet sync
 
 ```tsx
 import { useTonAddress } from "@tonconnect/ui-react";
 import { useTonConnectClient } from "@toncast/sdk-react";
 
 function WalletSync() {
-  // Mirrors the connected wallet address into client.userAddress.
-  // Clears it when the wallet disconnects (empty string).
+  // Keeps client.userAddress in sync with the connected wallet.
+  // Automatically clears it when the user disconnects.
   useTonConnectClient(useTonAddress());
   return null;
 }
@@ -109,9 +125,9 @@ function WalletSync() {
 
 ---
 
-## End-to-end bet flow
+## Placing a bet with `useBet`
 
-### Simple — `useBet`
+`useBet` is the recommended way to build a betting card. It composes all the lower-level hooks and manages state for you:
 
 ```tsx
 import { useBet } from "@toncast/sdk-react";
@@ -120,14 +136,18 @@ import { useTonAddress, useTonConnectUI } from "@tonconnect/ui-react";
 function BetCard({ pariId }: { pariId: string }) {
   const userAddress = useTonAddress();
   const [tc] = useTonConnectUI();
+
+  // Pass null when the wallet isn't connected yet — the hook safely does nothing
   const bet = useBet({ pariId: userAddress ? pariId : null, defaultSide: "yes" });
 
   return (
     <button
       disabled={!bet.quote.isFeasible || bet.confirm.isPending}
       onClick={async () => {
+        // confirmCurrent re-checks prices and builds the transaction
         const confirmed = await bet.confirmCurrent({ financialRiskAcknowledged: true });
         if (!confirmed) return;
+
         await tc.sendTransaction({
           messages: confirmed.messages,
           validUntil: Math.floor(Date.now() / 1000) + 5 * 60,
@@ -140,19 +160,18 @@ function BetCard({ pariId }: { pariId: string }) {
 }
 ```
 
-### Advanced — composing lower-level hooks
-
-For fine-grained control, compose `useBetSummary` → `useBetQuote` → `useConfirmBet` directly. See `examples/react-app/src/BetCard.tsx` for a full reference implementation.
+Need more control? You can compose the lower-level hooks yourself: `useBetSummary` → `useBetQuote` → `useConfirmBet`. Check `examples/react-app/src/BetCard.tsx` for a complete example.
 
 ---
 
-## Prefetching with `toncastQueryKeys`
+## Prefetching
 
-Use `toncastQueryKeys` to ensure prefetch keys match the built-in hooks exactly (including `bigint` serialization):
+Use `toncastQueryKeys` when prefetching to make sure keys match what the hooks use internally (including `bigint` serialization):
 
 ```tsx
 import { toncastQueryKeys } from "@toncast/sdk-react";
 
+// In a loader, route guard, or server component:
 void queryClient.prefetchQuery({
   queryKey: toncastQueryKeys.paris.detail(pariId),
   queryFn: ({ signal }) => client.paris.get(pariId, signal),

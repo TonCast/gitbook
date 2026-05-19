@@ -1,16 +1,20 @@
 # Embeddable Widget — `@toncast/widget`
 
-A fully-featured betting UI you can embed in any web app: market list, pari detail view, bet placement with TonConnect, and white-label theming via CSS variables.
+The widget is a self-contained betting UI you can drop into any web page or React app. It includes a live market list, individual market pages, bet placement with TonConnect, and support for custom branding through CSS variables — no extra development required.
 
 {% hint style="info" %}
-**Two integration paths:** load the hosted CDN bundle (no bundler required) or install the npm package and use the React component or imperative API.
+**Not sure which approach to use?** Try the visual configurator first at [widget.toncast.me](https://widget.toncast.me/) — you can preview the widget, tweak colors and layout, and export a ready-to-paste code snippet.
 {% endhint %}
 
 ---
 
-## Option A — CDN (plain HTML, no bundler)
+## Three ways to add the widget
 
-Host a [TonConnect manifest](https://docs.ton.org/v3/guidelines/ton-connect/creating-manifest) at `{your-domain}/tonconnect-manifest.json`. The widget's standalone mode derives the manifest URL from `tonconnect.options.domain`.
+### Option A — One script tag (CDN, no build tool needed)
+
+The simplest option. Add a `<script>` tag and a container `<div>`, and the widget is running. No npm, no bundler.
+
+Before you start: host a [TonConnect manifest](https://docs.ton.org/v3/guidelines/ton-connect/creating-manifest) at `https://your-app.com/tonconnect-manifest.json`. The widget needs it for wallet connections.
 
 ```html
 <!DOCTYPE html>
@@ -39,24 +43,22 @@ Host a [TonConnect manifest](https://docs.ton.org/v3/guidelines/ton-connect/crea
 </html>
 ```
 
-CDN URLs are **major-versioned** (`/v0/`, `/v1/`, …): you get non-breaking patch updates within a major; change the path for breaking releases.
+The CDN URL is versioned (`/v0/`, `/v1/`, …). You'll get bug fixes automatically within the same major version. When we release a breaking change, we bump the major — so you opt in on your own schedule.
 
 ---
 
-## Option B — npm loader (React + existing TonConnect)
+### Option B — React app with your own TonConnect
 
-Install the loader:
+If you already have TonConnect set up in a React app, use `@toncast/widget-loader`. It loads the widget from the CDN at runtime and wires it to your existing wallet connection.
 
 ```bash
-npm install @toncast/widget-loader @tonconnect/ui-react
+npm install @toncast/widget-loader
 ```
 
 ```tsx
 import { useEffect, useRef } from "react";
 import { useTonConnectUI } from "@tonconnect/ui-react";
-import ToncastWidgetLoader, {
-  type ToncastWidgetInstance,
-} from "@toncast/widget-loader";
+import ToncastWidgetLoader, { type ToncastWidgetInstance } from "@toncast/widget-loader";
 
 function ToncastBettingWidget() {
   const [tonconnect] = useTonConnectUI();
@@ -65,6 +67,7 @@ function ToncastBettingWidget() {
 
   useEffect(() => {
     let active = true;
+
     ToncastWidgetLoader.load()
       .then((Widget) => {
         if (!active || !containerRef.current) return;
@@ -86,11 +89,17 @@ function ToncastBettingWidget() {
 }
 ```
 
-Wrap your app tree in `<TonConnectUIProvider manifestUrl="https://your-app.com/tonconnect-manifest.json">`.
+Make sure your app tree is wrapped in `<TonConnectUIProvider manifestUrl="https://your-app.com/tonconnect-manifest.json">`.
 
 ---
 
-## Option C — React component (`@toncast/widget/react`)
+### Option C — React component (npm package)
+
+Install the widget as an npm package and render it as a React component. Ideal if you want to keep things in your bundle and use the `onBet` callback directly as a prop.
+
+```bash
+npm install @toncast/widget
+```
 
 ```tsx
 import { Widget } from "@toncast/widget/react";
@@ -103,25 +112,30 @@ const config = {
 };
 
 function App() {
-  return <Widget config={config} onBet={({ pariId, amount, side }) => {
-    analytics.track("bet_sent", { pariId, amount: amount.toString(), side });
-  }} />;
+  return (
+    <Widget
+      config={config}
+      onBet={({ pariId, amount, side }) => {
+        console.log("Bet placed:", side, amount.toString(), "on", pariId);
+      }}
+    />
+  );
 }
 ```
 
 ---
 
-## Subscribing to bet events
+## Listening to bet events
 
-Both the imperative and React APIs emit the same `{ pariId, amount, side }` payload after a bet transaction is sent.
+Whenever a user successfully places a bet, both the CDN and React versions fire the same event with the same payload: `{ pariId, amount, side }`.
 
-**Imperative (CDN or npm):**
+**Imperative API (CDN / npm class):**
 
 ```ts
 const widget = new ToncastWidget(config);
 
 widget.on("bet", ({ pariId, amount, side }) => {
-  console.log("bet placed", pariId, side, amount.toString());
+  analytics.track("bet_placed", { pariId, side, amount: amount.toString() });
 });
 
 widget.mount(document.getElementById("toncast-widget"));
@@ -130,28 +144,31 @@ widget.mount(document.getElementById("toncast-widget"));
 **React component:**
 
 ```tsx
-<Widget config={config} onBet={({ pariId, amount, side }) => {
-  analytics.track("bet_sent", { pariId, amount: amount.toString(), side });
-}} />
+<Widget
+  config={config}
+  onBet={({ pariId, amount, side }) => {
+    analytics.track("bet_placed", { pariId, side, amount: amount.toString() });
+  }}
+/>
 ```
 
-### Lifecycle events
+### Widget lifecycle methods
 
-The imperative instance also exposes `mount`, `unmount`, and `error` events.
+The imperative class exposes a small set of methods for managing the widget's lifecycle:
 
-| Method | Description |
+| Method | What it does |
 |---|---|
-| `widget.mount(el)` | Mount the widget into an element. |
-| `widget.unmount()` | Unmount, but keep event listeners (allows remounting). |
-| `widget.dispose()` | Unmount + clear all listeners. Call when discarding the instance. |
-| `widget.on(event, fn)` | Add a listener. Events: `"bet"`, `"mount"`, `"unmount"`, `"error"`. |
+| `widget.mount(element)` | Renders the widget inside the given element. |
+| `widget.unmount()` | Removes the widget from the DOM but keeps event listeners, so you can remount later. |
+| `widget.dispose()` | Removes the widget and clears all event listeners. Call this when you're fully done with the instance. |
+| `widget.on(event, fn)` | Listen to an event. Available events: `"bet"`, `"mount"`, `"unmount"`, `"error"`. |
 | `widget.off(event, fn)` | Remove a specific listener. |
 
 ---
 
-## White-label theming
+## Custom branding
 
-Pass `widget.cssVars` to customize colors and `widget.layout.grid` for responsive columns.
+The widget reads CSS variables that you control. Pass them in `widget.cssVars` to match your brand colors, and use `widget.layout.grid` to control how many market cards appear per row.
 
 ```ts
 const widget = new ToncastWidget({
@@ -160,19 +177,19 @@ const widget = new ToncastWidget({
     options: { domain: "https://your-app.com" },
   },
   widget: {
-    theme: "system", // "light" | "dark" | "system"
+    theme: "system", // "light" | "dark" | "system" — follows the user's OS preference
     cssVars: {
-      accent:  "#7c3aed",
-      success: "#10b981",
-      danger:  "#ef4444",
-      warn:    "#f59e0b",
-      density: "compact", // "compact" | "normal" | "spacious"
+      accent:  "#7c3aed", // buttons, highlights
+      success: "#10b981", // YES side color
+      danger:  "#ef4444", // NO side color
+      warn:    "#f59e0b", // warning states
+      density: "compact", // "compact" | "default" | "comfortable" — controls spacing
       light: { bg: "#ffffff" },
       dark:  { bg: "#0b1020" },
     },
     layout: {
       grid: {
-        mobile:  1,
+        mobile:  1, // cards per row on mobile
         tablet:  2,
         desktop: 3,
       },
@@ -181,40 +198,42 @@ const widget = new ToncastWidget({
 });
 ```
 
-Source tokens (`accent`, `bg`, `success`, `danger`, `warn`, `density`) are automatically resolved into hover states, borders, shadows, and spacing. Explicit low-level values (e.g. `successBg`) always override derivation. Set `deriveCssVars: false` to disable all derivation.
+The widget automatically derives hover states, borders, shadows, and spacing from your base tokens. If you want to override a specific derived value (like `successBg`), just pass it explicitly and the widget will use that exact value instead. To disable all automatic derivation, set `deriveCssVars: false`.
+
+> **Tip:** Use the [visual configurator](https://widget.toncast.me/) to preview your color choices and copy the generated config.
 
 ---
 
 ## Language
 
-The widget ships a built-in language picker. Two layers control the language:
+The widget has a built-in language picker that the user can use. As the host, you can also control the language from outside:
 
-| Source | Wins on conflict |
+| Setting | Behavior |
 |---|---|
-| `config.widget.language` (host-set) | Always — reapplied on every re-render. |
-| In-widget picker (user-selected) | Until the host changes `config.widget.language`. |
+| `config.widget.language` (you set this) | Always applied — even if the user picked something else in the widget. |
+| In-widget language picker | Works freely unless you set `config.widget.language`. |
 
-To lock the language, always pass `config.widget.language`. To let the user choose freely, omit it.
-
----
-
-## Container ID convention
-
-`mount(container)` accepts any `Element`. The `#toncast-widget` id used in the snippets above is a convention: the widget-constructor tool scopes its exported `style.css` overrides under `#toncast-widget { … }`. Keep that id (or update the CSS scope) when reusing the exported stylesheet.
+To lock the language and prevent the picker from changing it, always pass `config.widget.language`. To let users choose freely, leave it out.
 
 ---
 
 ## Referral attribution
 
-Pass `widget.referral` in the config to attribute bets to your wallet:
+If you want bets placed through your integration to earn you a referral share, pass your wallet address and percentage:
 
 ```ts
 const widget = new ToncastWidget({
   tonconnect: { … },
   widget: {
-    referral: { address: "UQMyWallet…", pct: 5 }, // 0..7
+    referral: { address: "UQYourWallet…", pct: 5 }, // 0–7%
   },
 });
 ```
 
-In **standalone** mode, removing `widget.referral` from config clears it on the SDK client. In **integrated** mode (you pass your own `ToncastClient`), an absent `widget.referral` is treated as "host manages this directly" and is never cleared by the widget.
+In standalone mode, removing `referral` from the config clears it entirely. In integrated mode (where you pass your own `ToncastClient`), leaving it out means the widget won't touch whatever referral you've set on the client directly.
+
+---
+
+## A note on the container ID
+
+`widget.mount(element)` accepts any DOM element — the `id="toncast-widget"` you see in examples is just a convention. The [widget configurator](https://widget.toncast.me/) scopes its exported `style.css` overrides to `#toncast-widget { … }`, so if you use a different ID, make sure to update the exported CSS accordingly.

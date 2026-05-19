@@ -2,17 +2,33 @@
 
 The widget is a self-contained betting UI you can drop into any web page or React app. It includes a live market list, individual market pages, bet placement with TonConnect, and support for custom branding through CSS variables — no extra development required.
 
-{% hint style="info" %}
-**Start here:** [widget.toncast.me](https://widget.toncast.me/) — a visual configurator where you can preview the widget live, tweak colors, theme, and layout, then export in one click:
+---
 
-- **Download ZIP** — a ready-to-host package: `index.html` (standalone page), `index.iife.css` (widget styles), and `tonconnect-manifest.json` with your domain and app name pre-filled.
-- **Copy JS snippet** — a CDN `<script>` embed for plain HTML pages.
-- **Copy React snippet** — a ready-to-paste `ToncastBettingWidget` component using `@toncast/widget-loader`.
+## The fastest way — download a ready-to-deploy ZIP
+
+Go to **[widget.toncast.me](https://widget.toncast.me/)**, configure the look and feel visually, then click **Download ZIP**.
+
+You'll get a folder called `toncast-widget/` with three files:
+
+| File | What it is |
+|---|---|
+| `index.html` | A complete standalone page — the widget already wired up and ready to serve. |
+| `index.iife.css` | Widget styles, bundled locally (no CDN dependency for CSS). |
+| `tonconnect-manifest.json` | The TonConnect identity file for your app. |
+
+The configurator asks for your domain and app name before you export, so all three files come out pre-filled with your values — no manual editing required.
+
+Upload the folder to any static hosting (Vercel, Netlify, Cloudflare Pages, GitHub Pages, your own server — anything works) and you're live.
+
+{% hint style="info" %}
+The configurator also lets you copy a **JS snippet** (for embedding in an existing HTML page) or a **React snippet** (a ready-to-paste component using `@toncast/widget-loader`) — same configure-and-export flow, just pick a different export button.
 {% endhint %}
 
 ---
 
-## Three ways to add the widget
+## Manual integration options
+
+If you need to embed the widget inside an existing app rather than deploy it as a standalone page, use one of the options below.
 
 ### Option A — One script tag (CDN, no build tool needed)
 
@@ -259,4 +275,4 @@ In standalone mode, removing `referral` from the config clears it entirely. In i
 
 ## A note on the container ID
 
-`widget.mount(element)` accepts any DOM element — the `id="toncast-widget"` you see in examples is just a convention. The [widget configurator](https://widget.toncast.me/) scopes its exported `style.css` overrides to `#toncast-widget { … }`, so if you use a different ID, make sure to update the exported CSS accordingly.
+`widget.mount(element)` accepts any DOM element — the `id="toncast-widget"` you see in examples is just a convention. The ZIP from the configurator uses `#toncast-widget` as the container ID in `index.html`. If you rename the element, update the `id` attribute in `index.html` to match.

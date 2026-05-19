@@ -91,11 +91,13 @@ These hooks connect to live WebSocket streams and update your component on every
 
 | Hook | What you get |
 |---|---|
-| `useStreamList(params)` | Live list of markets. `data` is the latest snapshot, updated on every WebSocket broadcast. |
+| `useStreamList(params)` | Live list of markets. `data` is the latest `Pari[]` snapshot, updated on every WebSocket broadcast. |
 | `useSubscribe(pariId, params?)` | Live view of one market. `data` is `{ pari, oddsState, coefficientHistory }`. Disabled when `pariId` is falsy. |
-| `useBetSummary(pariId)` | Streaming bet summary with two phases: TON prices arrive in ~200 ms, jetton prices follow in 3–8 s. |
+| `useBetSummary(pariId, opts?)` | Streaming bet summary. Two phases: TON prices arrive in ~200 ms, jetton prices follow in 3–8 s. Returns standard `UseQueryResult`. |
 
-All live hooks return: `{ data, status, error, streamStatus, isLoading, isError, isSuccess, refetch }`. The `streamStatus` field mirrors the underlying stream's connection state (`"loading" | "live" | "polling" | "stopped"`).
+`useStreamList` and `useSubscribe` return: `{ data, status, error, streamStatus, isLoading, isError, isSuccess, refetch }` — the extra `streamStatus` reflects the WS connection state (`"loading" | "live" | "polling" | "stopped"`).
+
+`useBetSummary` returns standard TanStack `UseQueryResult<BetSummary>` — no `streamStatus`.
 
 ### Actions
 

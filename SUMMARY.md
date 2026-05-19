@@ -22,6 +22,13 @@
 * [Bet execution and payouts](faqs/bet-execution-and-payouts.md)
 * [Security](faqs/security.md)
 
+## SDK
+
+* [Overview](sdk/overview.md)
+* [Core SDK — @toncast/sdk](sdk/core-sdk.md)
+* [React SDK — @toncast/sdk-react](sdk/react-sdk.md)
+* [Embeddable Widget](sdk/widget.md)
+
 ## Smart contracts
 
 * [Toncast minter contract](smart-contracts/toncast-minter-contract.md)

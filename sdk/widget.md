@@ -26,30 +26,30 @@ The configurator also lets you copy a **JS snippet** (for embedding in an existi
 
 ---
 
-## Turning your deployment into a Telegram Mini App (TMA)
+## Registering your Mini App in Telegram
 
-Once your widget is live at a public `https://` URL (from the deploy step above), you can open it as a Telegram Mini App right inside Telegram. You don't need to write any bot code — just create a bot and point it at your URL using **[@BotFather](https://t.me/BotFather)**.
+To turn your live widget into a Telegram Mini App, **you don't need to write any bot code.** You just register your app with Telegram's official **[@BotFather](https://t.me/BotFather)** and point it at the URL from the deploy step above. The whole thing takes about 2 minutes.
 
 {% hint style="warning" %}
 Telegram only accepts Mini App URLs served over **HTTPS** on a public domain. The hosting providers listed above (Vercel, Netlify, Cloudflare Pages, GitHub Pages) all give you an HTTPS URL out of the box.
 {% endhint %}
 
-### 1. Create a bot
+### Step 1 — Create a container bot
 
-Open a chat with **[@BotFather](https://t.me/BotFather)** in Telegram and send:
+Every Mini App lives inside a bot, so the bot is really just a "shell" for your app. Open **[@BotFather](https://t.me/BotFather)** in Telegram and send:
 
 ```
 /newbot
 ```
 
-BotFather will ask for two things:
+It asks for two things:
 
-1. **A name** — the display name shown to users (e.g. `My Markets`).
-2. **A username** — must be unique and end in `bot` (e.g. `my_markets_bot`). If the name is taken, just try another.
+- **A name** — the display name users see (e.g. `Toncast Bets`).
+- **A username** — must be unique and end in `bot` (e.g. `toncast_bets_bot`). If it's taken, just try another.
 
-When it's done, BotFather replies with a link to your bot (`t.me/<your_bot>`) and an **HTTP API token** that looks like `8824792805:AAGY…`. Keep this token private — anyone with it can control your bot. You don't need the token for a no-code Mini App, but store it safely if you later add bot logic.
+BotFather then sends you an **API token**. You don't need it for a no-code Mini App — just save it somewhere safe in case you add bot logic later.
 
-### 2. Register the Mini App
+### Step 2 — Attach the Mini App
 
 Still in the BotFather chat, send:
 
@@ -61,15 +61,15 @@ Then follow the prompts:
 
 | Prompt | What to enter |
 |---|---|
-| Which bot | Pick the bot you just created. |
+| Which bot | Pick the bot you created in Step 1. |
 | Title | The Mini App title (e.g. `Markets`). |
 | Short description | One line describing the app. |
-| Photo (640×360) | An icon for the app. Image dimensions must be **exactly 640×360** or BotFather rejects it. |
-| Demo GIF | Send `/empty` to skip — you can add one later with `/editapp`. |
+| Photo | An icon for the app — dimensions must be **exactly 640×360**, or BotFather rejects it. |
+| Demo GIF | Send `/empty` to skip — you can add one later. |
 | Web App URL | Your live deployment URL, e.g. `https://your-app.vercel.app`. |
-| Short name | 3–30 characters (`a-zA-Z0-9_`). Used in the public link, e.g. `tma`. |
+| Short name | 3–30 characters (`a-zA-Z0-9_`), used in the public link, e.g. `tma`. |
 
-That's it. BotFather gives you a direct link like `t.me/<your_bot>/<short_name>` — open it on any device and your widget runs as a full Telegram Mini App.
+**Done!** BotFather gives you a direct link like `t.me/<your_bot>/<short_name>` — open it on any device and your widget runs as a full Telegram Mini App.
 
 {% hint style="info" %}
 To change the URL, icon, or any other setting later, send `/editapp` to BotFather and pick your bot.

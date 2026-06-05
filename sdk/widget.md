@@ -26,6 +26,57 @@ The configurator also lets you copy a **JS snippet** (for embedding in an existi
 
 ---
 
+## Registering your Mini App in Telegram
+
+To turn your live widget into a Telegram Mini App, **you don't need to write any bot code.** You just register your app with Telegram's official **[@BotFather](https://t.me/BotFather)** and point it at the URL from the deploy step above. The whole thing takes about 2 minutes.
+
+{% hint style="warning" %}
+Telegram only accepts Mini App URLs served over **HTTPS** on a public domain. The hosting providers listed above (Vercel, Netlify, Cloudflare Pages, GitHub Pages) all give you an HTTPS URL out of the box.
+{% endhint %}
+
+### Step 1 — Create a container bot
+
+Every Mini App lives inside a bot, so the bot is really just a "shell" for your app. Open **[@BotFather](https://t.me/BotFather)** in Telegram and send:
+
+```
+/newbot
+```
+
+It asks for two things:
+
+- **A name** — the display name users see (e.g. `Toncast Bets`).
+- **A username** — must be unique and end in `bot` (e.g. `toncast_bets_bot`). If it's taken, just try another.
+
+BotFather then sends you an **API token**. You don't need it for a no-code Mini App — just save it somewhere safe in case you add bot logic later.
+
+### Step 2 — Attach the Mini App
+
+Still in the BotFather chat, send:
+
+```
+/newapp
+```
+
+Then follow the prompts:
+
+| Prompt | What to enter |
+|---|---|
+| Which bot | Pick the bot you created in Step 1. |
+| Title | The Mini App title (e.g. `Markets`). |
+| Short description | One line describing the app. |
+| Photo | An icon for the app — dimensions must be **exactly 640×360**, or BotFather rejects it. |
+| Demo GIF | Send `/empty` to skip — you can add one later. |
+| Web App URL | Your live deployment URL, e.g. `https://your-app.vercel.app`. |
+| Short name | 3–30 characters (`a-zA-Z0-9_`), used in the public link, e.g. `tma`. |
+
+**Done!** BotFather gives you a direct link like `t.me/<your_bot>/<short_name>` — open it on any device and your widget runs as a full Telegram Mini App.
+
+{% hint style="info" %}
+To change the URL, icon, or any other setting later, send `/editapp` to BotFather and pick your bot.
+{% endhint %}
+
+---
+
 ## Manual integration options
 
 If you need to embed the widget inside an existing app rather than deploy it as a standalone page, use one of the options below.
